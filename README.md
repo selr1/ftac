@@ -42,8 +42,10 @@ pip install mutagen
 
 ## Usage
 
-Run the script from a terminal:
+Clone the repository and run the script:
 ```bash
+git clone https://github.com/ext4zu/tagfix.git
+cd tagfix
 python3 tagfix.py
 ```
 
