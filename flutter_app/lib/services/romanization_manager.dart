@@ -49,18 +49,4 @@ class RomanizationManager {
     _scriptPath = scriptFile.path;
     return _scriptPath!;
   }
-  
-  /// Check if Python3 and koroman are available
-  Future<bool> isAvailable() async {
-    try {
-      final scriptPath = await getScriptPath();
-      // Test with empty string to check if script can run
-      final result = await Process.run('python3', [scriptPath, 'test']);
-      // If koroman is missing, the script will return exit code 1 with error in JSON
-      return result.exitCode == 0 || result.stdout.toString().contains('"result"');
-    } catch (e) {
-      print('Romanization not available: $e');
-      return false;
-    }
-  }
 }

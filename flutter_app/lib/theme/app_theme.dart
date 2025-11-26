@@ -79,22 +79,4 @@ class AppTheme {
       ),
     );
   }
-  
-  // Glassmorphism Decoration Helper
-  static BoxDecoration glassDecoration(BuildContext context) {
-    return BoxDecoration(
-      color: Theme.of(context).colorScheme.surface.withOpacity(0.7),
-      borderRadius: BorderRadius.circular(16),
-      border: Border.all(
-        color: Colors.white.withOpacity(0.1),
-      ),
-      boxShadow: [
-        BoxShadow(
-          color: Colors.black.withOpacity(0.2),
-          blurRadius: 16,
-          offset: const Offset(0, 4),
-        ),
-      ],
-    );
-  }
 }

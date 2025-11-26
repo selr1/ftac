@@ -6,15 +6,6 @@ import 'ffmpeg_manager.dart';
 class FfmpegService {
   final FfmpegManager _ffmpegManager = FfmpegManager.instance;
 
-  Future<bool> isAvailable() async {
-    return await _ffmpegManager.isAvailable();
-  }
-  
-  
-  Future<String?> convertToWav(AudioFile file) async {
-    return _convert(file, 'wav', ['-acodec', 'pcm_s16le']);
-  }
-
   Future<String?> convertToFlac(AudioFile file) async {
     return _convert(file, 'flac', ['-acodec', 'flac']);
   }

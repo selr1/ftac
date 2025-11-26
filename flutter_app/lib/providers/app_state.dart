@@ -495,14 +495,6 @@ class AppState extends ChangeNotifier {
     _loadTags();
   }
 
-  /// Navigate up one level to parent directory
-  Future<void> navigateUp() async {
-    if (_currentDirectory == null || _currentDirectory == _rootDirectory) return;
-    
-    final parentDir = Directory(_currentDirectory!).parent.path;
-    await navigateToDirectory(parentDir);
-  }
-
   /// Navigate to a specific breadcrumb segment
   Future<void> navigateToBreadcrumb(int index) async {
     if (index < 0 || index >= _breadcrumbSegments.length) return;
@@ -878,27 +870,6 @@ class AppState extends ChangeNotifier {
     if (_batchTemplate == null) return;
     _batchTemplate = _batchTemplate!.copyWith(extractLyrics: extract);
     notifyListeners();
-  }
-
-
-  
-  /// Discard pending changes without saving
-  void discardPendingChanges(AudioFile file) {
-    final index = _files.indexOf(file);
-    if (index != -1) {
-      _files[index] = _files[index].copyWith(
-        clearPendingCover: true,
-        clearPendingLyrics: true,
-      );
-      if (_selectedFile == file) {
-        _selectedFile = _files[index];
-      }
-      notifyListeners();
-    }
-  }
-  
-  Future<void> convertSelectedToWav() async {
-      // Implement batch conversion for selected files
   }
 
   Future<void> deleteItem(dynamic item) async {

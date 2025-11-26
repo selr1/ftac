@@ -1,4 +1,3 @@
-import 'dart:typed_data';
 import 'package:audiotags/audiotags.dart';
 import '../models/audio_file.dart';
 
@@ -26,40 +25,6 @@ class TagService {
     }
   }
   
-  Future<bool> setCover(AudioFile file, List<int> imageData) async {
-      try {
-          final currentTag = file.tags ?? await AudioTags.read(file.path);
-          
-          // Create a new Tag object manually since copyWith might be missing or limited
-          final newTag = Tag(
-              title: currentTag?.title,
-              trackArtist: currentTag?.trackArtist,
-              album: currentTag?.album,
-              albumArtist: currentTag?.albumArtist,
-              genre: currentTag?.genre,
-              year: currentTag?.year,
-              trackNumber: currentTag?.trackNumber,
-              trackTotal: currentTag?.trackTotal,
-              discNumber: currentTag?.discNumber,
-              discTotal: currentTag?.discTotal,
-              lyrics: currentTag?.lyrics,
-              pictures: [
-                  Picture(
-                      pictureType: PictureType.coverFront,
-                      mimeType: MimeType.jpeg,
-                      bytes: Uint8List.fromList(imageData),
-                  )
-              ],
-          );
-          
-          await AudioTags.write(file.path, newTag);
-          return true;
-      } catch (e) {
-          print('Error setting cover for ${file.path}: $e');
-          return false;
-      }
-  }
-  
   /// Get lyrics from audio file
   Future<String?> getLyrics(AudioFile file) async {
     try {
@@ -68,35 +33,6 @@ class TagService {
     } catch (e) {
       print('Error reading lyrics for ${file.path}: $e');
       return null;
-    }
-  }
-  
-  /// Set lyrics for audio file
-  Future<bool> setLyrics(AudioFile file, String lyrics) async {
-    try {
-      final currentTag = file.tags ?? await AudioTags.read(file.path);
-      
-      // Create a new Tag object with updated lyrics
-      final newTag = Tag(
-        title: currentTag?.title,
-        trackArtist: currentTag?.trackArtist,
-        album: currentTag?.album,
-        albumArtist: currentTag?.albumArtist,
-        genre: currentTag?.genre,
-        year: currentTag?.year,
-        trackNumber: currentTag?.trackNumber,
-        trackTotal: currentTag?.trackTotal,
-        discNumber: currentTag?.discNumber,
-        discTotal: currentTag?.discTotal,
-        lyrics: lyrics,
-        pictures: currentTag?.pictures ?? [],
-      );
-      
-      await AudioTags.write(file.path, newTag);
-      return true;
-    } catch (e) {
-      print('Error setting lyrics for ${file.path}: $e');
-      return false;
     }
   }
 }
