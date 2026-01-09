@@ -29,13 +29,15 @@ void EditorPanel::setupUI() {
     coverLabel->setStyleSheet("QLabel { border: 1px solid #3E3E42; background-color: #252526; }");
     coverLabel->setText("No Cover");
     coverLabel->setAlignment(Qt::AlignCenter);
-    coverLabel->setCursor(Qt::PointingHandCursor);
-    connect(coverLabel, &QLabel::mousePressEvent, [this](QMouseEvent*) { onCoverClicked(); });
     
-    fetchCoverButton = new QPushButton("Fetch Cover", this);
+    QPushButton *loadCoverButton = new QPushButton("Load Cover from File", this);
+    connect(loadCoverButton, &QPushButton::clicked, this, &EditorPanel::onCoverClicked);
+    
+    fetchCoverButton = new QPushButton("Fetch Cover Online", this);
     connect(fetchCoverButton, &QPushButton::clicked, this, &EditorPanel::onFetchCoverClicked);
     
     coverLayout->addWidget(coverLabel, 0, Qt::AlignCenter);
+    coverLayout->addWidget(loadCoverButton);
     coverLayout->addWidget(fetchCoverButton);
     
     mainLayout->addWidget(coverGroup);

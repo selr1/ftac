@@ -10,6 +10,7 @@
 #include <QJsonArray>
 #include <QEventLoop>
 #include <QTemporaryFile>
+#include <QDir>
 #include <iostream>
 
 MetadataHandler::MetadataHandler() {
@@ -166,7 +167,8 @@ std::string MetadataHandler::downloadMBCover(const std::string& mbid) {
                           QString::fromStdString(mbid) + "/" + QString::fromStdString(suffix);
     
     QNetworkAccessManager manager;
-    QNetworkRequest request(QUrl(coverUrlStr));
+    QUrl url{coverUrlStr};
+    QNetworkRequest request{url};
     request.setRawHeader("User-Agent", headers["User-Agent"].c_str());
     
     QNetworkReply *reply = manager.get(request);
@@ -192,7 +194,8 @@ std::string MetadataHandler::downloadMBCover(const std::string& mbid) {
         coverUrlStr = QString::fromStdString(coverUrl) + "/release/" + 
                       QString::fromStdString(mbid) + "/front";
         
-        request.setUrl(QUrl(coverUrlStr));
+        QUrl fallbackUrl{coverUrlStr};
+        request.setUrl(fallbackUrl);
         reply = manager.get(request);
         QObject::connect(reply, &QNetworkReply::finished, &loop, &QEventLoop::quit);
         loop.exec();
@@ -299,7 +302,8 @@ std::vector<unsigned char> MetadataHandler::getCoverBytes(const std::string& mbi
                           QString::fromStdString(mbid) + "/" + QString::fromStdString(suffix);
     
     QNetworkAccessManager manager;
-    QNetworkRequest request(QUrl(coverUrlStr));
+    QUrl url{coverUrlStr};
+    QNetworkRequest request{url};
     request.setRawHeader("User-Agent", headers["User-Agent"].c_str());
     
     QNetworkReply *reply = manager.get(request);
@@ -317,7 +321,8 @@ std::vector<unsigned char> MetadataHandler::getCoverBytes(const std::string& mbi
         coverUrlStr = QString::fromStdString(coverUrl) + "/release/" + 
                       QString::fromStdString(mbid) + "/front";
         
-        request.setUrl(QUrl(coverUrlStr));
+        QUrl fallbackUrl{coverUrlStr};
+        request.setUrl(fallbackUrl);
         reply = manager.get(request);
         QObject::connect(reply, &QNetworkReply::finished, &loop, &QEventLoop::quit);
         loop.exec();

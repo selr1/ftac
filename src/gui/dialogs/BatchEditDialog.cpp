@@ -5,6 +5,7 @@
 #include <QLabel>
 #include <QMessageBox>
 #include <QProgressDialog>
+#include <QFileInfo>
 
 BatchEditDialog::BatchEditDialog(const std::vector<QString>& filepaths, QWidget *parent)
     : QDialog(parent), filepaths(filepaths), audioHandler(std::make_unique<AudioHandler>()) {

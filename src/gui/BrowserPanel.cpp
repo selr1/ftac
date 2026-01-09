@@ -1,5 +1,6 @@
 #include "BrowserPanel.h"
 #include <QVBoxLayout>
+#include <QHeaderView>
 #include <QDir>
 
 BrowserPanel::BrowserPanel(QWidget *parent) : QWidget(parent) {
