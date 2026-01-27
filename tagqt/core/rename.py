@@ -1,0 +1,93 @@
+import re
+import os
+
+class Renamer:
+    @staticmethod
+    def sanitize_filename(filename):
+        """Removes invalid characters from filename."""
+        # Replace / \ : * ? " < > | with _
+        return re.sub(r'[\\/*?:"<>|]', '_', filename)
+
+    @staticmethod
+    def tag_to_filename(pattern, metadata):
+        """
+        Generates a filename based on pattern and metadata.
+        Pattern examples: %artist% - %title%, %track% %title%
+        """
+        if not metadata:
+            return None
+            
+        # Map of pattern keys to metadata properties
+        replacements = {
+            '%artist%': metadata.artist or 'Unknown Artist',
+            '%title%': metadata.title or 'Unknown Title',
+            '%album%': metadata.album or 'Unknown Album',
+            '%year%': metadata.year or '',
+            '%track%': metadata.track_number or '',
+            '%genre%': metadata.genre or '',
+            '%albumartist%': metadata.album_artist or '',
+            '%bpm%': metadata.bpm or '',
+            '%key%': metadata.initial_key or ''
+        }
+        
+        result = pattern
+        for key, value in replacements.items():
+            result = result.replace(key, str(value))
+            
+        return Renamer.sanitize_filename(result)
+
+    @staticmethod
+    def filename_to_tag(pattern, filename):
+        """
+        Parses filename using pattern to extract tags.
+        Pattern examples: %artist% - %title%
+        Returns a dictionary of extracted tags.
+        """
+        # Escape special regex chars in pattern, but keep %...%
+        # We want to replace %tag% with (?P<tag>.+)
+        
+        # First, escape the pattern for regex, but we need to identify our tokens first.
+        # A simple approach: split by tokens.
+        
+        # Regex to find %tag%
+        token_regex = re.compile(r'%(\w+)%')
+        
+        # Construct regex from pattern
+        regex_pattern = "^" + re.escape(pattern) + "$"
+        
+        # Replace escaped %tag% with named groups
+        # Since we escaped everything, % becomes \%. So we look for \\%(\w+)\\%
+        
+        def replace_token(match):
+            tag = match.group(1)
+            return f"(?P<{tag}>.+)"
+            
+        # We need to be careful. re.escape escapes %, so %artist% becomes \%artist\%
+        # Let's unescape the % parts or just build it manually.
+        
+        parts = token_regex.split(pattern)
+        # parts will be ['Start ', 'artist', ' - ', 'title', '']
+        
+        final_regex = "^"
+        tags_found = []
+        
+        for i, part in enumerate(parts):
+            if i % 2 == 0:
+                # Literal text
+                final_regex += re.escape(part)
+            else:
+                # Token (tag)
+                tag = part
+                final_regex += f"(?P<{tag}>.+?)" # Non-greedy match is usually safer
+                tags_found.append(tag)
+                
+        final_regex += "$"
+        
+        try:
+            match = re.match(final_regex, filename)
+            if match:
+                return match.groupdict()
+        except Exception as e:
+            print(f"Error parsing filename: {e}")
+            
+        return None

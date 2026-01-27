@@ -1,0 +1,6 @@
+tests/
+venv/
+.pytest_cache/
+__pycache__/
+tagqt/__pycache__/
+tagqt/core/__pycache__/
