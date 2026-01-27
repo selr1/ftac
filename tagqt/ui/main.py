@@ -1,21 +1,21 @@
 from PySide6.QtWidgets import QMainWindow, QHBoxLayout, QVBoxLayout, QWidget, QPushButton, QFileDialog, QLabel, QComboBox, QMenuBar, QMenu, QTreeWidgetItemIterator, QDialog, QProgressBar, QSizePolicy
 from PySide6.QtGui import QPixmap, QAction, QShortcut, QKeySequence
 from PySide6.QtCore import Qt, QTimer, QThread, QEvent
-from melodate.ui.theme import Theme
-from melodate.ui.tracks import FileList
-from melodate.ui.side import Sidebar
-from melodate.core.tags import MetadataHandler
-from melodate.core.lyric import LyricsFetcher
-from melodate.core.roman import Romanizer
-from melodate.core.art import CoverArtManager
-from melodate.core.case import CaseConverter
-from melodate.core.rename import Renamer
-from melodate.core.flac import FlacEncoder, DependencyChecker
-from melodate.core.musicbrainz import MusicBrainzClient
-from melodate.core.settings import Settings
-from melodate.ui import dialogs
-from melodate.ui.batch_status import ClickableProgressBar, BatchStatusDialog, ClickableLabel
-from melodate.ui.workers import (
+from tagqt.ui.theme import Theme
+from tagqt.ui.tracks import FileList
+from tagqt.ui.side import Sidebar
+from tagqt.core.tags import MetadataHandler
+from tagqt.core.lyric import LyricsFetcher
+from tagqt.core.roman import Romanizer
+from tagqt.core.art import CoverArtManager
+from tagqt.core.case import CaseConverter
+from tagqt.core.rename import Renamer
+from tagqt.core.flac import FlacEncoder, DependencyChecker
+from tagqt.core.musicbrainz import MusicBrainzClient
+from tagqt.core.settings import Settings
+from tagqt.ui import dialogs
+from tagqt.ui.batch_status import ClickableProgressBar, BatchStatusDialog, ClickableLabel
+from tagqt.ui.workers import (
     LyricsWorker, AutoTagWorker, FolderLoaderWorker, RenameWorker,
     CoverFetchWorker, CoverResizeWorker, RomanizeWorker, CaseConvertWorker,
     FlacReencodeWorker, CsvImportWorker, SaveWorker
@@ -73,7 +73,7 @@ class MainWindow(QMainWindow):
         self.notification_layout.setSpacing(15)
         
         # Initialize Toast Manager
-        from melodate.ui.toast import ToastManager
+        from tagqt.ui.toast import ToastManager
         self.toast_manager = ToastManager(self)
         
         # Cancel Button (Left of Progress)
@@ -815,7 +815,7 @@ class MainWindow(QMainWindow):
             md = MetadataHandler(f)
             file_data.append((f, md))
             
-        from melodate.ui.rename import RenamerDialog
+        from tagqt.ui.rename import RenamerDialog
         dialog = RenamerDialog(file_data, self)
         if dialog.exec():
             rename_data = dialog.preview_data
@@ -904,7 +904,7 @@ class MainWindow(QMainWindow):
         if not filepath:
             return
         
-        from melodate.core.csv_io import export_metadata_to_csv
+        from tagqt.core.csv_io import export_metadata_to_csv
         success, error = export_metadata_to_csv(files, filepath)
         if success:
             self.show_toast(f"Exported {len(files)} files to CSV")
@@ -917,7 +917,7 @@ class MainWindow(QMainWindow):
         if not filepath:
             return
         
-        from melodate.core.csv_io import import_metadata_from_csv
+        from tagqt.core.csv_io import import_metadata_from_csv
         rows, error = import_metadata_from_csv(filepath)
         if error:
             dialogs.show_warning(self, "Import Failed", error)
@@ -1082,7 +1082,7 @@ class MainWindow(QMainWindow):
 
 <p><b>Supported Formats</b>: MP3, FLAC, OGG, M4A, WAV</p>
 """
-        from melodate.ui.help import HelpDialog
+        from tagqt.ui.help import HelpDialog
         dialog = HelpDialog(self)
         dialog.set_content(hints_text)
         dialog.exec()
@@ -1097,7 +1097,7 @@ class MainWindow(QMainWindow):
 <tr><td><b>Escape</b></td><td>Exit global edit mode</td></tr>
 </table>
 """
-        from melodate.ui.help import HelpDialog
+        from tagqt.ui.help import HelpDialog
         dialog = HelpDialog(self)
         dialog.set_content(shortcuts_text)
         dialog.exec()
@@ -1116,7 +1116,7 @@ class MainWindow(QMainWindow):
 <li>Batch rename and re-encode files</li>
 </ul>
 """
-        from melodate.ui.help import HelpDialog
+        from tagqt.ui.help import HelpDialog
         dialog = HelpDialog(self)
         dialog.set_content(about_text)
         dialog.exec()
@@ -1268,7 +1268,7 @@ class MainWindow(QMainWindow):
         title = self.sidebar.title_edit.text()
         album = self.sidebar.album_edit.text()
         
-        from melodate.ui.search import UnifiedSearchDialog
+        from tagqt.ui.search import UnifiedSearchDialog
         
         def search_callback(a, t, al):
             return self.lyrics_fetcher.search_lyrics(a, t, al)
@@ -1292,7 +1292,7 @@ class MainWindow(QMainWindow):
         artist = self.sidebar.artist_edit.text()
         album = self.sidebar.album_edit.text()
         
-        from melodate.ui.search import UnifiedSearchDialog
+        from tagqt.ui.search import UnifiedSearchDialog
         
         def search_callback(a, al):
             return self.cover_manager.search_cover_candidates(a, al)

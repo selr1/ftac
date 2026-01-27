@@ -1,5 +1,5 @@
 from PySide6.QtCore import QObject, Signal
-from melodate.core.tags import MetadataHandler
+from tagqt.core.tags import MetadataHandler
 import os
 import time
 
@@ -166,7 +166,7 @@ class AutoTagWorker(QObject):
 
     def run(self):
         try:
-            from melodate.core.musicbrainz import MusicBrainzClient
+            from tagqt.core.musicbrainz import MusicBrainzClient
             
             groups = {}
             skipped_early = 0
@@ -559,7 +559,7 @@ class CaseConvertWorker(QObject):
 
     def run(self):
         try:
-            from melodate.core.case import CaseConverter
+            from tagqt.core.case import CaseConverter
             total = len(self.files)
             fields = ['title', 'artist', 'album', 'genre', 'album_artist', 'comment', 'publisher']
             
@@ -610,7 +610,7 @@ class FlacReencodeWorker(QObject):
 
     def run(self):
         try:
-            from melodate.core.flac import FlacEncoder
+            from tagqt.core.flac import FlacEncoder
             total = len(self.files)
             for i, f in enumerate(self.files):
                 if not self._is_running: break

@@ -4,7 +4,7 @@ from PySide6.QtWidgets import (
 )
 from PySide6.QtCore import Qt, Signal
 from PySide6.QtGui import QPixmap
-from melodate.ui.theme import Theme
+from tagqt.ui.theme import Theme
 
 class Sidebar(QWidget):
     save_clicked = Signal()

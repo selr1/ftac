@@ -1,6 +1,6 @@
 from PySide6.QtWidgets import QWidget, QLabel, QVBoxLayout, QGraphicsOpacityEffect
 from PySide6.QtCore import Qt, QTimer, QPropertyAnimation, QEasingCurve, QPoint, QSize
-from melodate.ui.theme import Theme
+from tagqt.ui.theme import Theme
 
 class ToastWidget(QWidget):
     def __init__(self, message, parent=None, duration=3000, is_error=False):

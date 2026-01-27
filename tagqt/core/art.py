@@ -55,7 +55,7 @@ class CoverArtManager:
                 "query": query,
                 "fmt": "json"
             }
-            headers = {"User-Agent": "Melodate/1.0 ( contact@example.com )"}
+            headers = {"User-Agent": "tagqt/1.0 ( contact@example.com )"}
             
             response = self.session.get(url, params=params, headers=headers, timeout=10)
             response.raise_for_status()

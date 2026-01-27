@@ -3,7 +3,7 @@ from PySide6.QtWidgets import (
     QHBoxLayout, QLabel
 )
 from PySide6.QtCore import Qt
-from melodate.ui.theme import Theme
+from tagqt.ui.theme import Theme
 
 class HelpDialog(QDialog):
     def __init__(self, parent=None):

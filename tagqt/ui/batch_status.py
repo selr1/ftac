@@ -4,7 +4,7 @@ from PySide6.QtWidgets import (
     QDialogButtonBox, QWidget
 )
 from PySide6.QtCore import Qt, Signal
-from melodate.ui.theme import Theme
+from tagqt.ui.theme import Theme
 
 class ClickableProgressBar(QProgressBar):
     clicked = Signal()

@@ -1,6 +1,6 @@
 from PySide6.QtWidgets import QMessageBox, QProgressDialog
 from PySide6.QtCore import Qt
-from melodate.ui.theme import Theme
+from tagqt.ui.theme import Theme
 
 
 def show_info(parent, title, message):

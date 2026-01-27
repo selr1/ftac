@@ -35,7 +35,7 @@ class FlacEncoder:
         tags_to_preserve = {}
         cover_data = None
         try:
-            from melodate.core.tags import MetadataHandler
+            from tagqt.core.tags import MetadataHandler
             original_meta = MetadataHandler(filepath)
             
             # Store all tags in a dict
@@ -78,7 +78,7 @@ class FlacEncoder:
             
             # Restore metadata to temp file
             try:
-                from melodate.core.tags import MetadataHandler
+                from tagqt.core.tags import MetadataHandler
                 new_meta = MetadataHandler(temp_path)
                 
                 for key, value in tags_to_preserve.items():

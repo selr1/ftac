@@ -1,6 +1,6 @@
 from PySide6.QtWidgets import QDialog, QVBoxLayout, QTreeWidget, QTreeWidgetItem, QDialogButtonBox, QLabel, QHeaderView
 from PySide6.QtCore import Qt
-from melodate.ui.theme import Theme
+from tagqt.ui.theme import Theme
 
 class SearchResultsDialog(QDialog):
     def __init__(self, results, parent=None, mode="lyrics"):

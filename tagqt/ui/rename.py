@@ -1,7 +1,7 @@
 from PySide6.QtWidgets import QDialog, QVBoxLayout, QFormLayout, QLineEdit, QDialogButtonBox, QLabel, QListWidget, QListWidgetItem
 from PySide6.QtCore import Qt
-from melodate.ui.theme import Theme
-from melodate.core.rename import Renamer
+from tagqt.ui.theme import Theme
+from tagqt.core.rename import Renamer
 import os
 
 class RenamerDialog(QDialog):

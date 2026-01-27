@@ -4,8 +4,8 @@ from PySide6.QtWidgets import (
     QDialogButtonBox, QWidget
 )
 from PySide6.QtCore import Qt
-from melodate.ui.theme import Theme
-from melodate.ui import dialogs
+from tagqt.ui.theme import Theme
+from tagqt.ui import dialogs
 
 class UnifiedSearchDialog(QDialog):
     def __init__(self, parent=None, mode="lyrics", initial_artist="", initial_title="", initial_album="", fetcher_callback=None):

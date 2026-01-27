@@ -2,7 +2,7 @@ from PySide6.QtWidgets import QTreeWidget, QAbstractItemView, QTreeWidgetItem, Q
 from PySide6.QtCore import Qt, Signal
 from PySide6.QtGui import QAction
 import os
-from melodate.core.tags import MetadataHandler
+from tagqt.core.tags import MetadataHandler
 
 class FileList(QTreeWidget):
     files_dropped = Signal(list)
