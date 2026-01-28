@@ -1250,7 +1250,12 @@ class MainWindow(QMainWindow):
 
     def romanize_metadata(self):
         if getattr(self.sidebar, 'is_global_mode', False):
-            self.romanize_all()
+            # Process strictly selected files in global mode
+            files = self.get_selected_files()
+            if files:
+                self._romanize_list(files)
+            else:
+                dialogs.show_warning(self, "No Selection", "Please select files to romanize.")
             return
             
         available, msg = DependencyChecker.check_koroman()
