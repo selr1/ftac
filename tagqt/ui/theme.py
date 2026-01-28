@@ -120,6 +120,17 @@ class Theme:
             QPushButton[class="primary"]:hover {{
                 background-color: {Theme.ACCENT_HOVER};
             }}
+
+            /* Secondary/Outlined Button Style */
+            QPushButton[class="secondary"] {{
+                background-color: {Theme.SURFACE0};
+                border: 1px solid {Theme.SURFACE2};
+                color: {Theme.TEXT};
+            }}
+            QPushButton[class="secondary"]:hover {{
+                background-color: {Theme.SURFACE1};
+                border: 1px solid {Theme.OVERLAY0};
+            }}
             
             /* Combo Box */
             QComboBox {{

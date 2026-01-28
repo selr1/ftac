@@ -155,6 +155,7 @@ class Sidebar(QWidget):
         actions_layout.setSpacing(12)
 
         self.romanize_btn = QPushButton("Romanize Lyrics")
+        self.romanize_btn.setProperty("class", "secondary")
         self.romanize_btn.setCursor(Qt.PointingHandCursor)
         self.romanize_btn.clicked.connect(self.romanize_clicked.emit)
         actions_layout.addWidget(self.romanize_btn)
@@ -162,11 +163,13 @@ class Sidebar(QWidget):
         # Lyrics Buttons Row
         lyrics_btn_layout = QHBoxLayout()
         self.lyrics_btn = QPushButton("Get Lyrics")
+        self.lyrics_btn.setProperty("class", "secondary")
         self.lyrics_btn.setCursor(Qt.PointingHandCursor)
         self.lyrics_btn.clicked.connect(self.lyrics_clicked.emit)
         lyrics_btn_layout.addWidget(self.lyrics_btn)
         
         self.load_lyrics_btn = QPushButton("Load Lyrics")
+        self.load_lyrics_btn.setProperty("class", "secondary")
         self.load_lyrics_btn.setCursor(Qt.PointingHandCursor)
         self.load_lyrics_btn.clicked.connect(self.load_lyrics_clicked.emit)
         lyrics_btn_layout.addWidget(self.load_lyrics_btn)
@@ -175,11 +178,13 @@ class Sidebar(QWidget):
         # Cover Buttons Row
         cover_btn_layout = QHBoxLayout()
         self.cover_btn = QPushButton("Get Cover")
+        self.cover_btn.setProperty("class", "secondary")
         self.cover_btn.setCursor(Qt.PointingHandCursor)
         self.cover_btn.clicked.connect(self.cover_clicked.emit)
         cover_btn_layout.addWidget(self.cover_btn)
         
         self.load_cover_btn = QPushButton("Load Cover")
+        self.load_cover_btn.setProperty("class", "secondary")
         self.load_cover_btn.setCursor(Qt.PointingHandCursor)
         self.load_cover_btn.clicked.connect(self.load_cover_clicked.emit)
         cover_btn_layout.addWidget(self.load_cover_btn)
@@ -201,6 +206,7 @@ class Sidebar(QWidget):
         bottom_layout.addWidget(line)
 
         self.reencode_btn = QPushButton("Re-encode FLAC")
+        self.reencode_btn.setProperty("class", "secondary")
         self.reencode_btn.setCursor(Qt.PointingHandCursor)
         self.reencode_btn.clicked.connect(self.reencode_flac_clicked.emit)
         self.reencode_btn.setVisible(False)
