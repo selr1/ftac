@@ -162,7 +162,7 @@ class Sidebar(QWidget):
         self.romanize_btn.setProperty("class", "secondary")
         self.romanize_btn.setCursor(Qt.PointingHandCursor)
         self.romanize_btn.clicked.connect(self.romanize_clicked.emit)
-        romanize_layout.addWidget(self.romanize_btn)
+        self.romanize_layout.addWidget(self.romanize_btn)
         
         self.reencode_btn = QPushButton("Re-encode FLAC")
         self.reencode_btn.setProperty("class", "secondary")
