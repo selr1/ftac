@@ -256,8 +256,9 @@ class Sidebar(QWidget):
             else:
                 self.resolution_label.setText(res_text)
         else:
+            self.cover_label.setPixmap(QPixmap())            # Cover
             self.cover_label.setPixmap(QPixmap())
-            self.cover_label.setText("No Cover")
+            self.cover_label.setText("Get Cover")
             self.resolution_label.setText("")
 
     def set_file_specs(self, specs):
@@ -336,6 +337,11 @@ class Sidebar(QWidget):
             self.lyrics_btn.setText("Get Lyrics")
             self.cover_btn.setText("Get Cover")
             self.romanize_btn.setText("Romanize Lyrics")
+            
+            # Cover
+            self.cover_label.setPixmap(QPixmap())
+            self.cover_label.setText("Get Cover")
+            # self.resolution_label.setText("Multiple Files") # Removed by user? No, I see it was missing in view.
             
             self.setStyleSheet(f"#Sidebar {{ background-color: {Theme.MANTLE}; }}")
             

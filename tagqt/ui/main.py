@@ -72,6 +72,11 @@ class MainWindow(QMainWindow):
         self.notification_layout = QHBoxLayout()
         self.notification_layout.setSpacing(15)
         
+        # Selection Debounce Timer
+        self.selection_timer = QTimer(self)
+        self.selection_timer.setSingleShot(True)
+        self.selection_timer.timeout.connect(self._handle_selection_deferred)
+        
         # Initialize Toast Manager
         from tagqt.ui.toast import ToastManager
         self.toast_manager = ToastManager(self)
@@ -1120,22 +1125,7 @@ class MainWindow(QMainWindow):
         dialog.set_content(about_text)
         dialog.exec()
 
-    def change_display_mode(self, mode):
-        self.file_list.set_display_mode(mode)
 
-    def on_file_selected(self, item, column):
-        # Handle both top-level items (files in File mode) and children (files in Group mode)
-        # Prevent loading if we are in multi-select mode (Global Edit)
-        if len(self.file_list.selectedItems()) > 1:
-            return
-
-        # Groups don't have file paths in user role usually, or we need to check.
-        filepath = item.data(0, Qt.UserRole)
-        if filepath:
-            self.load_file(filepath)
-        else:
-            # It's a group header
-            pass
 
     def on_files_dropped(self, files):
         if files:
@@ -1145,22 +1135,17 @@ class MainWindow(QMainWindow):
             self.load_file(files[0])
 
     def on_selection_changed(self):
-        # Use a small delay/debounce to ensure selection state is stable
-        # This prevents intermediate states during multi-selection (Ctrl+Click) 
-        # from triggering single file loads that overwrite the global mode UI.
-        QTimer.singleShot(50, self._handle_selection_deferred)
+        # Restart timer (debounce) - waits for selection to stabilize
+        self.selection_timer.start(100) # 100ms delay
 
     def _handle_selection_deferred(self):
         files = self.get_selected_files()
         
         if len(files) > 1:
             self.sidebar.set_global_mode(True)
-            self.current_file = None # Clear current single file context
+            self.current_file = None 
             self.metadata = None
         elif len(files) == 1:
-            # Only switch to single mode if we are not already editing that file
-            # This prevents reloading if the selection didn't actually change the primary file
-            # but wait, we need to load if it's a different file.
             self.sidebar.set_global_mode(False)
             self.load_file(files[0])
         else:
