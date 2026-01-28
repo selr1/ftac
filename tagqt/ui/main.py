@@ -1145,17 +1145,26 @@ class MainWindow(QMainWindow):
             self.load_file(files[0])
 
     def on_selection_changed(self):
+        # Use a small delay/debounce to ensure selection state is stable
+        # This prevents intermediate states during multi-selection (Ctrl+Click) 
+        # from triggering single file loads that overwrite the global mode UI.
+        QTimer.singleShot(50, self._handle_selection_deferred)
+
+    def _handle_selection_deferred(self):
         files = self.get_selected_files()
+        
         if len(files) > 1:
             self.sidebar.set_global_mode(True)
             self.current_file = None # Clear current single file context
             self.metadata = None
         elif len(files) == 1:
+            # Only switch to single mode if we are not already editing that file
+            # This prevents reloading if the selection didn't actually change the primary file
+            # but wait, we need to load if it's a different file.
             self.sidebar.set_global_mode(False)
             self.load_file(files[0])
         else:
             self.sidebar.set_global_mode(False)
-            # Clear sidebar?
             
     def load_file(self, filepath):
         self.current_file = filepath
