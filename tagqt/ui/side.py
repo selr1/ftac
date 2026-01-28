@@ -26,6 +26,8 @@ class Sidebar(QWidget):
     def __init__(self):
         super().__init__()
         self.setObjectName("Sidebar")
+        self._current_res = ""
+        self._current_specs = ""
         self.setup_ui()
 
     def setup_ui(self):
@@ -242,40 +244,35 @@ class Sidebar(QWidget):
         if pixmap and not pixmap.isNull():
             self.cover_label.setPixmap(pixmap.scaled(200, 200, Qt.KeepAspectRatio, Qt.SmoothTransformation))
             self.cover_label.setText("")
-            
-            res_text = f"{pixmap.width()}x{pixmap.height()}"
-            # Preserve existing specs if any
-            current = self.resolution_label.text()
-            if "kbps" in current:
-                parts = current.split("•")
-                if len(parts) > 1:
-                    specs = parts[1].strip()
-                    self.resolution_label.setText(f"{res_text} • {specs}")
-                else:
-                    self.resolution_label.setText(f"{res_text} • {current}")
-            else:
-                self.resolution_label.setText(res_text)
+            self._current_res = f"{pixmap.width()}x{pixmap.height()}"
         else:
-            self.cover_label.setPixmap(QPixmap())            # Cover
             self.cover_label.setPixmap(QPixmap())
-            self.cover_label.setText("Get Cover")
-            self.resolution_label.setText("")
+            self.cover_label.setText("No Cover")
+            self._current_res = ""
+            
+        self._update_info_label()
 
     def set_file_specs(self, specs):
         """
         specs: dict with keys 'bitrate', 'sample_rate', 'filesize'
         """
         if not specs:
-            self.resolution_label.setText("")
-            return
-            
-        text = f"{specs.get('bitrate', 0)}kbps | {specs.get('sample_rate', 0)}kHz | {specs.get('filesize', 0)}MB"
-        # Append resolution if available
-        current_text = self.resolution_label.text()
-        if "x" in current_text and "kbps" not in current_text:
-             text = f"{current_text} • {text}"
+            self._current_specs = ""
+        else:
+            self._current_specs = f"{specs.get('bitrate', 0)}kbps | {specs.get('sample_rate', 0)}kHz | {specs.get('filesize', 0)}MB"
+        self._update_info_label()
+
+    def _update_info_label(self):
+        parts = []
+        if self._current_res:
+            parts.append(self._current_res)
+        if self._current_specs:
+            parts.append(self._current_specs)
         
-        self.resolution_label.setText(text)
+        if parts:
+            self.resolution_label.setText(" • ".join(parts))
+        else:
+            self.resolution_label.setText("")
 
     def set_global_mode(self, enabled):
         """
@@ -339,7 +336,10 @@ class Sidebar(QWidget):
             # Cover
             self.cover_label.setPixmap(QPixmap())
             self.cover_label.setText("Get Cover")
-            self.resolution_label.setText("Multiple Files")
+            
+            self._current_res = ""
+            self._current_specs = "Multiple Files"
+            self._update_info_label()
             
             self.setStyleSheet(f"#Sidebar {{ background-color: {Theme.MANTLE}; }}")
             
