@@ -159,6 +159,13 @@ class Sidebar(QWidget):
         self.romanize_btn.setCursor(Qt.PointingHandCursor)
         self.romanize_btn.clicked.connect(self.romanize_clicked.emit)
         actions_layout.addWidget(self.romanize_btn)
+        
+        self.reencode_btn = QPushButton("Re-encode FLAC")
+        self.reencode_btn.setProperty("class", "secondary")
+        self.reencode_btn.setCursor(Qt.PointingHandCursor)
+        self.reencode_btn.clicked.connect(self.reencode_flac_clicked.emit)
+        self.reencode_btn.setVisible(False)
+        actions_layout.addWidget(self.reencode_btn)
 
         # Lyrics Buttons Row
         lyrics_btn_layout = QHBoxLayout()
@@ -205,13 +212,6 @@ class Sidebar(QWidget):
         line.setStyleSheet(f"background-color: {Theme.SURFACE1};")
         bottom_layout.addWidget(line)
 
-        self.reencode_btn = QPushButton("Re-encode FLAC")
-        self.reencode_btn.setProperty("class", "secondary")
-        self.reencode_btn.setCursor(Qt.PointingHandCursor)
-        self.reencode_btn.clicked.connect(self.reencode_flac_clicked.emit)
-        self.reencode_btn.setVisible(False)
-        bottom_layout.addWidget(self.reencode_btn)
-        
         self.cancel_global_btn = QPushButton("Cancel Batch Edit")
         self.cancel_global_btn.setCursor(Qt.PointingHandCursor)
         self.cancel_global_btn.clicked.connect(self.cancel_global_clicked.emit)
