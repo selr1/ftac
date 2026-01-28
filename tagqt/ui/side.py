@@ -154,18 +154,24 @@ class Sidebar(QWidget):
         actions_layout = QVBoxLayout()
         actions_layout.setSpacing(12)
 
+        # Romanize and Re-encode Buttons Row
+        romanize_layout = QHBoxLayout()
+        
         self.romanize_btn = QPushButton("Romanize Lyrics")
         self.romanize_btn.setProperty("class", "secondary")
         self.romanize_btn.setCursor(Qt.PointingHandCursor)
         self.romanize_btn.clicked.connect(self.romanize_clicked.emit)
-        actions_layout.addWidget(self.romanize_btn)
+        romanize_layout.addWidget(self.romanize_btn)
         
         self.reencode_btn = QPushButton("Re-encode FLAC")
         self.reencode_btn.setProperty("class", "secondary")
         self.reencode_btn.setCursor(Qt.PointingHandCursor)
         self.reencode_btn.clicked.connect(self.reencode_flac_clicked.emit)
-        self.reencode_btn.setVisible(False)
-        actions_layout.addWidget(self.reencode_btn)
+        # Always visible or controlled by logic, but user requested it for single edit too
+        self.reencode_btn.setVisible(True) 
+        romanize_layout.addWidget(self.reencode_btn)
+        
+        actions_layout.addLayout(romanize_layout)
 
         # Lyrics Buttons Row
         lyrics_btn_layout = QHBoxLayout()
@@ -321,7 +327,9 @@ class Sidebar(QWidget):
             
             self.save_btn.setText("Save All Changes")
             self.cancel_global_btn.setVisible(True)
-            self.reencode_btn.setVisible(True)
+            self.save_btn.setText("Save All Changes")
+            self.cancel_global_btn.setVisible(True)
+            # self.reencode_btn.setVisible(True) # Now shared
             
             # Button labels stay the same in global mode - it's already implied
             self.lyrics_btn.setText("Get Lyrics")
@@ -339,7 +347,9 @@ class Sidebar(QWidget):
             
             self.save_btn.setText("Save Changes")
             self.cancel_global_btn.setVisible(False)
-            self.reencode_btn.setVisible(False)
+            self.save_btn.setText("Save Changes")
+            self.cancel_global_btn.setVisible(False)
+            # self.reencode_btn.setVisible(False) # Support single edit
             
             # Restore original button labels
             self.lyrics_btn.setText("Get Lyrics")
