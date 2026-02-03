@@ -24,6 +24,8 @@ class Theme:
     
     RED = "#ff5555"
     
+    TOAST_TEXT = "#ffffff"  # Always white on colored toast backgrounds
+    
     WINDOW_BG = BASE
     SIDEBAR_BG = MANTLE
     BUTTON_TEXT = TEXT

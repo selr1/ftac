@@ -240,6 +240,26 @@ class Sidebar(QWidget):
         self.extended_widget.setVisible(checked)
         self.toggle_btn.setText("Hide" if checked else "Show More")
 
+    def apply_theme(self):
+        self.cover_label.setStyleSheet(f"background-color: {Theme.SURFACE0}; border-radius: {Theme.CORNER_RADIUS};")
+        self.resolution_label.setStyleSheet(f"color: {Theme.SUBTEXT0}; font-size: 12px;")
+        self.toggle_btn.setStyleSheet(f"background-color: {Theme.SURFACE0}; color: {Theme.SUBTEXT0}; text-align: left; padding: 8px;")
+        self.lyrics_label.setStyleSheet(f"font-weight: bold; color: {Theme.SUBTEXT0}; margin-top: 10px;")
+        self.lyrics_edit.setStyleSheet(f"""
+            QTextEdit {{
+                background-color: {Theme.SURFACE0};
+                color: {Theme.TEXT};
+                border: 1px solid {Theme.SURFACE1};
+                border-radius: {Theme.CORNER_RADIUS};
+                padding: 10px;
+                font-family: '{Theme.FONT_FAMILY}', monospace;
+            }}
+            QTextEdit:focus {{
+                border: 1px solid {Theme.ACCENT};
+            }}
+        """)
+        self.cancel_global_btn.setStyleSheet(f"background-color: {Theme.SURFACE2}; color: {Theme.TEXT};")
+
     def set_cover(self, pixmap):
         if pixmap and not pixmap.isNull():
             self.cover_label.setPixmap(pixmap.scaled(200, 200, Qt.KeepAspectRatio, Qt.SmoothTransformation))

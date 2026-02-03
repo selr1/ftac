@@ -29,7 +29,7 @@ class ToastWidget(QWidget):
         self.label.setStyleSheet(f"""
             QLabel {{
                 background-color: {bg_color};
-                color: #ffffff;
+                color: {Theme.TOAST_TEXT};
                 padding: 12px 24px;
                 border-radius: 8px;
                 font-weight: 600;

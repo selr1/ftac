@@ -99,7 +99,7 @@ class MainWindow(QMainWindow):
             }}
             QPushButton:hover {{
                 background-color: {Theme.RED};
-                color: #ffffff;
+                color: {Theme.TOAST_TEXT};
                 border: 1px solid {Theme.RED};
             }}
             QPushButton:pressed {{
@@ -1094,8 +1094,76 @@ class MainWindow(QMainWindow):
     def toggle_theme(self, checked):
         Theme.set_light_mode(checked)
         self.settings.set_light_theme(checked)
-        self.setStyleSheet(Theme.get_stylesheet())
-        self.sidebar.setStyleSheet(Theme.get_stylesheet())
+        self._apply_theme()
+
+    def _apply_theme(self):
+        self.setUpdatesEnabled(False)
+        try:
+            stylesheet = Theme.get_stylesheet()
+            self.setStyleSheet(stylesheet)
+            self.sidebar.setStyleSheet(stylesheet)
+            self.sidebar.apply_theme()
+            
+            self.title_label.setStyleSheet(f"font-size: 24px; font-weight: bold; color: {Theme.ACCENT};")
+            
+            self.batch_cancel_btn.setStyleSheet(f"""
+                QPushButton {{
+                    background-color: {Theme.SURFACE1};
+                    color: {Theme.TEXT};
+                    font-size: 11px;
+                    font-weight: 600;
+                    border: 1px solid {Theme.SURFACE1};
+                    border-radius: 4px;
+                    padding: 4px 12px;
+                }}
+                QPushButton:hover {{
+                    background-color: {Theme.RED};
+                    color: {Theme.TOAST_TEXT};
+                    border: 1px solid {Theme.RED};
+                }}
+                QPushButton:pressed {{
+                    background-color: {Theme.ACCENT_DIM};
+                }}
+                QPushButton:disabled {{
+                    background-color: {Theme.SURFACE2};
+                    color: {Theme.SUBTEXT0};
+                }}
+            """)
+            
+            self.progress_frame.setStyleSheet(f"""
+                QWidget {{
+                    background-color: transparent;
+                    border-radius: 6px;
+                    border: none;
+                }}
+                QWidget:hover {{
+                    background-color: {Theme.SURFACE0};
+                }}
+            """)
+            
+            self.progress_bar.setStyleSheet(f"""
+                QProgressBar {{
+                    border: none;
+                    background-color: {Theme.SURFACE0};
+                    border-radius: 4px;
+                    color: {Theme.TEXT};
+                    font-size: 11px;
+                    font-weight: 600;
+                }}
+                QProgressBar::chunk {{
+                    background-color: {Theme.ACCENT};
+                    border-radius: 4px;
+                }}
+                QProgressBar {{
+                    selection-color: {Theme.CRUST};
+                    selection-background-color: {Theme.ACCENT};
+                }}
+            """)
+            
+            if hasattr(self, 'toast_manager') and self.toast_manager.current_toast:
+                self.toast_manager.current_toast.close()
+        finally:
+            self.setUpdatesEnabled(True)
 
     def show_hints(self):
         hints_text = """<h3>Usage Tips</h3>
