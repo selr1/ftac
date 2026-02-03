@@ -2,6 +2,7 @@ from PySide6.QtCore import QObject, Signal
 from tagqt.core.tags import MetadataHandler
 import os
 import time
+import threading
 
 class LyricsWorker(QObject):
     progress = Signal(int, int)
@@ -13,10 +14,10 @@ class LyricsWorker(QObject):
         super().__init__()
         self.files = files
         self.lyrics_fetcher = lyrics_fetcher
-        self._is_running = True
+        self._stop_event = threading.Event()
 
     def stop(self):
-        self._is_running = False
+        self._stop_event.set()
 
     def _is_synced(self, lyrics):
         if not lyrics:
@@ -55,7 +56,7 @@ class LyricsWorker(QObject):
             self.log.emit(f"[DEBUG] Starting batch lyrics fetch for {len(self.files)} files")
             
             for i, f in enumerate(self.files):
-                if not self._is_running:
+                if self._stop_event.is_set():
                     break
 
                 self.progress.emit(i, len(self.files))
@@ -128,10 +129,10 @@ class AutoTagWorker(QObject):
         super().__init__()
         self.files = files
         self.skip_existing = skip_existing
-        self._is_running = True
+        self._stop_event = threading.Event()
 
     def stop(self):
-        self._is_running = False
+        self._stop_event.set()
 
     @staticmethod
     def is_generic(val):
@@ -172,7 +173,7 @@ class AutoTagWorker(QObject):
             skipped_early = 0
             
             for f in self.files:
-                if not self._is_running:
+                if self._stop_event.is_set():
                     break
                 try:
                     md = MetadataHandler(f)
@@ -209,7 +210,7 @@ class AutoTagWorker(QObject):
             self.progress.emit(processed_count, total_files)
             
             for (artist, album), group_files in groups.items():
-                if not self._is_running:
+                if self._stop_event.is_set():
                     break
                 
                 self.log.emit(f"Looking up: {artist} - {album}")
@@ -231,7 +232,7 @@ class AutoTagWorker(QObject):
                 disc_count = release_details.get("disc_count", 1) if release_details else 1
                 
                 for f in group_files:
-                    if not self._is_running:
+                    if self._stop_event.is_set():
                         break
                     processed_count += 1
                     self.progress.emit(processed_count, total_files)
@@ -321,29 +322,29 @@ class FolderLoaderWorker(QObject):
     def __init__(self, folder_path):
         super().__init__()
         self.folder_path = folder_path
-        self._is_running = True
+        self._stop_event = threading.Event()
 
     def stop(self):
-        self._is_running = False
+        self._stop_event.set()
 
     def run(self):
         finished_emitted = False
         try:
             paths = []
             for root, dirs, filenames in os.walk(self.folder_path):
-                if not self._is_running:
+                if self._stop_event.is_set():
                     break
                 for filename in filenames:
                     if filename.lower().endswith(('.mp3', '.flac', '.ogg', '.m4a', '.wav')):
                         paths.append(os.path.join(root, filename))
             
-            if not self._is_running:
+            if self._stop_event.is_set():
                 return
 
             results = []
             total = len(paths)
             for i, path in enumerate(paths):
-                if not self._is_running:
+                if self._stop_event.is_set():
                     break
                 try:
                     md = MetadataHandler(path)
@@ -354,7 +355,7 @@ class FolderLoaderWorker(QObject):
                 if i % 10 == 0: # Update progress every 10 files to avoid signal overhead
                     self.progress.emit(i, total)
             
-            if not self._is_running:
+            if self._stop_event.is_set():
                 return
 
             self.finished.emit(results, self.folder_path)
@@ -375,16 +376,16 @@ class RenameWorker(QObject):
         """
         super().__init__()
         self.rename_data = rename_data
-        self._is_running = True
+        self._stop_event = threading.Event()
 
     def stop(self):
-        self._is_running = False
+        self._stop_event.set()
 
     def run(self):
         try:
             total = len(self.rename_data)
             for i, (old_path, new_name) in enumerate(self.rename_data.items()):
-                if not self._is_running:
+                if self._stop_event.is_set():
                     break
                 
                 self.progress.emit(i, total)
@@ -418,10 +419,10 @@ class CoverFetchWorker(QObject):
         super().__init__()
         self.files = files
         self.cover_manager = cover_manager
-        self._is_running = True
+        self._stop_event = threading.Event()
 
     def stop(self):
-        self._is_running = False
+        self._stop_event.set()
 
     def run(self):
         try:
@@ -429,7 +430,7 @@ class CoverFetchWorker(QObject):
             processed_folders = set()
             
             for i, f in enumerate(self.files):
-                if not self._is_running: break
+                if self._stop_event.is_set(): break
                 self.progress.emit(i, total)
                 
                 try:
@@ -472,16 +473,16 @@ class CoverResizeWorker(QObject):
     def __init__(self, files):
         super().__init__()
         self.files = files
-        self._is_running = True
+        self._stop_event = threading.Event()
 
     def stop(self):
-        self._is_running = False
+        self._stop_event.set()
 
     def run(self):
         try:
             total = len(self.files)
             for i, f in enumerate(self.files):
-                if not self._is_running: break
+                if self._stop_event.is_set(): break
                 self.progress.emit(i, total)
                 
                 try:
@@ -510,16 +511,16 @@ class RomanizeWorker(QObject):
         super().__init__()
         self.files = files
         self.romanizer = romanizer
-        self._is_running = True
+        self._stop_event = threading.Event()
 
     def stop(self):
-        self._is_running = False
+        self._stop_event.set()
 
     def run(self):
         try:
             total = len(self.files)
             for i, f in enumerate(self.files):
-                if not self._is_running: break
+                if self._stop_event.is_set(): break
                 self.progress.emit(i, total)
                 
                 try:
@@ -552,10 +553,10 @@ class CaseConvertWorker(QObject):
         super().__init__()
         self.files = files
         self.mode = mode
-        self._is_running = True
+        self._stop_event = threading.Event()
 
     def stop(self):
-        self._is_running = False
+        self._stop_event.set()
 
     def run(self):
         try:
@@ -564,7 +565,7 @@ class CaseConvertWorker(QObject):
             fields = ['title', 'artist', 'album', 'genre', 'album_artist', 'comment', 'publisher']
             
             for i, f in enumerate(self.files):
-                if not self._is_running: break
+                if self._stop_event.is_set(): break
                 self.progress.emit(i, total)
                 
                 try:
@@ -603,17 +604,17 @@ class FlacReencodeWorker(QObject):
     def __init__(self, files):
         super().__init__()
         self.files = files
-        self._is_running = True
+        self._stop_event = threading.Event()
 
     def stop(self):
-        self._is_running = False
+        self._stop_event.set()
 
     def run(self):
         try:
             from tagqt.core.flac import FlacEncoder
             total = len(self.files)
             for i, f in enumerate(self.files):
-                if not self._is_running: break
+                if self._stop_event.is_set(): break
                 self.progress.emit(i, total)
                 
                 success, error = FlacEncoder.reencode_flac(f)
@@ -635,16 +636,16 @@ class CsvImportWorker(QObject):
     def __init__(self, rows):
         super().__init__()
         self.rows = rows
-        self._is_running = True
+        self._stop_event = threading.Event()
 
     def stop(self):
-        self._is_running = False
+        self._stop_event.set()
 
     def run(self):
         try:
             total = len(self.rows)
             for i, row in enumerate(self.rows):
-                if not self._is_running: break
+                if self._stop_event.is_set(): break
                 self.progress.emit(i, total)
                 
                 fpath = row.get('filepath')
@@ -681,16 +682,16 @@ class SaveWorker(QObject):
         super().__init__()
         self.files = files
         self.changes = changes
-        self._is_running = True
+        self._stop_event = threading.Event()
 
     def stop(self):
-        self._is_running = False
+        self._stop_event.set()
 
     def run(self):
         try:
             total = len(self.files)
             for i, f in enumerate(self.files):
-                if not self._is_running: break
+                if self._stop_event.is_set(): break
                 self.progress.emit(i, total)
                 
                 try:

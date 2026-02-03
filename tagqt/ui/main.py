@@ -1,6 +1,6 @@
 from PySide6.QtWidgets import QMainWindow, QHBoxLayout, QVBoxLayout, QWidget, QPushButton, QFileDialog, QLabel, QComboBox, QMenuBar, QMenu, QTreeWidgetItemIterator, QDialog, QProgressBar, QSizePolicy
 from PySide6.QtGui import QPixmap, QAction, QShortcut, QKeySequence
-from PySide6.QtCore import Qt, QTimer, QThread, QEvent
+from PySide6.QtCore import Qt, QTimer, QThread, QEvent, QPropertyAnimation, QEasingCurve
 from tagqt.ui.theme import Theme
 from tagqt.ui.tracks import FileList
 from tagqt.ui.side import Sidebar
@@ -89,18 +89,23 @@ class MainWindow(QMainWindow):
         self.batch_cancel_btn.setFixedWidth(70)
         self.batch_cancel_btn.setStyleSheet(f"""
             QPushButton {{
-                background-color: {Theme.SURFACE1};
-                color: {Theme.TEXT};
-                font-size: 11px;
-                font-weight: 600;
-                border: 1px solid {Theme.SURFACE1};
-                border-radius: 4px;
-                padding: 2px 8px;
-            }}
-            QPushButton:hover {{
                 background-color: {Theme.RED};
                 color: #ffffff;
-                border: 1px solid {Theme.RED};
+                font-size: 11px;
+                font-weight: 700;
+                border: none;
+                border-radius: 4px;
+                padding: 4px 12px;
+            }}
+            QPushButton:hover {{
+                background-color: #ff7777;
+            }}
+            QPushButton:pressed {{
+                background-color: #cc4444;
+            }}
+            QPushButton:disabled {{
+                background-color: {Theme.SURFACE2};
+                color: {Theme.SUBTEXT0};
             }}
         """)
         self.notification_layout.addWidget(self.batch_cancel_btn, 0, Qt.AlignVCenter)
@@ -164,6 +169,10 @@ class MainWindow(QMainWindow):
             }}
         """)
         frame_layout.addWidget(self.progress_bar)
+        
+        self._progress_animation = QPropertyAnimation(self.progress_bar, b"value")
+        self._progress_animation.setDuration(150)
+        self._progress_animation.setEasingCurve(QEasingCurve.OutCubic)
 
         batch_layout.addWidget(self.progress_frame)
         
@@ -660,10 +669,23 @@ class MainWindow(QMainWindow):
         self._start_batch_worker(LyricsWorker(files, self.lyrics_fetcher), connect_log=True)
 
     def on_batch_progress(self, current, total):
-        self.progress_bar.setValue(current)
+        if total > 0:
+            target_value = int((current / total) * 100)
+            self.progress_bar.setMaximum(100)
+            
+            if hasattr(self, '_progress_animation'):
+                from PySide6.QtCore import QPropertyAnimation
+                if self._progress_animation.state() == QPropertyAnimation.Running:
+                    self._progress_animation.stop()
+                
+                self._progress_animation.setStartValue(self.progress_bar.value())
+                self._progress_animation.setEndValue(target_value)
+                self._progress_animation.start()
+            else:
+                self.progress_bar.setValue(target_value)
+            
+            self.progress_bar.setFormat(f"Processing... {target_value}%")
         self.batch_dialog.update_progress(current, total)
-        percent = int((current / total) * 100) if total > 0 else 0
-        self.progress_bar.setFormat(f"Processing... {percent}%")
         
     def on_batch_result(self, filepath, status, message):
         self.batch_dialog.add_result(filepath, status, message)
@@ -676,10 +698,20 @@ class MainWindow(QMainWindow):
     def cancel_batch_operation(self):
         if hasattr(self, 'worker') and self.worker:
             self.worker.stop()
-        # We don't set batch_running = False here; 
-        # it will be set in on_batch_finished when the thread actually stops.
+        
+        self.batch_cancel_btn.setEnabled(False)
+        self.batch_cancel_btn.setText("Stopping...")
+        
+        if hasattr(self, 'thread') and self.thread and self.thread.isRunning():
+            self.thread.finished.connect(self._on_cancel_complete)
+        else:
+            self._on_cancel_complete()
+
+    def _on_cancel_complete(self):
         self.batch_container.setVisible(False)
         self.batch_cancel_btn.setVisible(False)
+        self.batch_cancel_btn.setEnabled(True)
+        self.batch_cancel_btn.setText("Cancel")
         self._persistent_toast = None
         self.show_toast("Operation canceled", duration=3000)
         
