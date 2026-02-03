@@ -98,6 +98,24 @@ class FileList(QTreeWidget):
         self.current_mode = mode
         self.refresh_view()
 
+    def set_filter(self, text):
+        text = text.lower().strip()
+        iterator = QTreeWidgetItemIterator(self)
+        while iterator.value():
+            item = iterator.value()
+            if item.data(0, Qt.UserRole):  # Only filter actual file items
+                filename = item.text(0).lower()
+                title = item.text(1).lower()
+                artist = item.text(2).lower()
+                album = item.text(3).lower()
+                match = (not text or 
+                         text in filename or 
+                         text in title or 
+                         text in artist or 
+                         text in album)
+                item.setHidden(not match)
+            iterator += 1
+
     def _update_item_columns(self, item, path, meta):
         """Updates the text of a QTreeWidgetItem in-place."""
         item.setText(0, os.path.basename(path))

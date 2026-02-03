@@ -1,4 +1,4 @@
-from PySide6.QtWidgets import QMainWindow, QHBoxLayout, QVBoxLayout, QWidget, QPushButton, QFileDialog, QLabel, QComboBox, QMenuBar, QMenu, QTreeWidgetItemIterator, QDialog, QProgressBar, QSizePolicy
+from PySide6.QtWidgets import QMainWindow, QHBoxLayout, QVBoxLayout, QWidget, QPushButton, QFileDialog, QLabel, QComboBox, QMenuBar, QMenu, QTreeWidgetItemIterator, QDialog, QProgressBar, QSizePolicy, QLineEdit
 from PySide6.QtGui import QPixmap, QAction, QShortcut, QKeySequence
 from PySide6.QtCore import Qt, QTimer, QThread, QEvent, QPropertyAnimation, QEasingCurve
 from tagqt.ui.theme import Theme
@@ -188,13 +188,39 @@ class MainWindow(QMainWindow):
         content_layout = QHBoxLayout()
         content_layout.setSpacing(30)
         
+        # Left Panel (File List + Filter)
+        left_panel = QVBoxLayout()
+        left_panel.setSpacing(10)
+        
+        # Filter Input
+        self.filter_input = QLineEdit()
+        self.filter_input.setPlaceholderText("Filter files by name, title, artist, album...")
+        self.filter_input.setClearButtonEnabled(True)
+        self.filter_input.textChanged.connect(self.on_filter_changed)
+        self.filter_input.setStyleSheet(f"""
+            QLineEdit {{
+                background-color: {Theme.SURFACE0};
+                border: 1px solid {Theme.SURFACE1};
+                border-radius: {Theme.CORNER_RADIUS};
+                padding: 10px 15px;
+                color: {Theme.TEXT};
+                font-size: 13px;
+            }}
+            QLineEdit:focus {{
+                border: 1px solid {Theme.ACCENT};
+            }}
+        """)
+        left_panel.addWidget(self.filter_input)
+        
         # File List (Left/Center)
         self.file_list = FileList()
         self.file_list.setContextMenuPolicy(Qt.CustomContextMenu)
         self.file_list.customContextMenuRequested.connect(self.show_context_menu)
         self.file_list.files_dropped.connect(self.on_files_dropped)
         self.file_list.itemSelectionChanged.connect(self.on_selection_changed)
-        content_layout.addWidget(self.file_list, stretch=2)
+        left_panel.addWidget(self.file_list)
+        
+        content_layout.addLayout(left_panel, stretch=2)
         
         # Sidebar (Right)
         self.sidebar = Sidebar()
@@ -222,6 +248,28 @@ class MainWindow(QMainWindow):
         QShortcut(QKeySequence("Ctrl+S"), self, self.save_metadata)
         QShortcut(QKeySequence("Ctrl+O"), self, self.open_folder_dialog)
         QShortcut(QKeySequence("Escape"), self, self.exit_global_mode)
+        QShortcut(QKeySequence("Ctrl+K"), self, self.show_command_palette)
+        
+        from tagqt.ui.palette import CommandPalette
+        self.command_palette = CommandPalette(self)
+        self.command_palette.register_commands([
+            {"name": "Open Folder", "shortcut": "Ctrl+O", "callback": self.open_folder_dialog},
+            {"name": "Save Changes", "shortcut": "Ctrl+S", "callback": self.save_metadata},
+            {"name": "Get Covers (All)", "shortcut": "", "callback": self.fetch_all_covers},
+            {"name": "Get Lyrics (All)", "shortcut": "", "callback": self.fetch_all_lyrics},
+            {"name": "Rename Files", "shortcut": "", "callback": self.rename_all_files},
+            {"name": "Auto-Tag (All)", "shortcut": "", "callback": self.autotag_all},
+            {"name": "Re-encode FLAC", "shortcut": "", "callback": self.reencode_flac_selected},
+            {"name": "Romanize Lyrics", "shortcut": "", "callback": self.romanize_all},
+            {"name": "Resize Covers", "shortcut": "", "callback": self.resize_all_covers},
+            {"name": "Toggle Theme", "shortcut": "", "callback": lambda: self.toggle_theme(not Theme._is_light)},
+            {"name": "Exit Global Edit", "shortcut": "Escape", "callback": self.exit_global_mode},
+            {"name": "Hints & Tips", "shortcut": "", "callback": self.show_hints},
+            {"name": "About TagQt", "shortcut": "", "callback": self.show_about},
+        ])
+
+    def show_command_palette(self):
+        self.command_palette.show()
 
     def closeEvent(self, event):
         try:
@@ -1248,6 +1296,9 @@ class MainWindow(QMainWindow):
                 self.file_list.add_file(f)
             # Load the first one
             self.load_file(files[0])
+
+    def on_filter_changed(self, text):
+        self.file_list.set_filter(text)
 
     def on_selection_changed(self):
         # Restart timer (debounce) - waits for selection to stabilize
