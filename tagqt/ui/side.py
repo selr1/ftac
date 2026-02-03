@@ -221,19 +221,37 @@ class Sidebar(QWidget):
         line.setStyleSheet(f"background-color: {Theme.SURFACE1};")
         bottom_layout.addWidget(line)
 
-        self.cancel_global_btn = QPushButton("Cancel Batch Edit")
+        # Button row for side-by-side layout
+        btn_row = QHBoxLayout()
+        btn_row.setSpacing(8)
+
+        self.cancel_global_btn = QPushButton("Cancel")
         self.cancel_global_btn.setCursor(Qt.PointingHandCursor)
         self.cancel_global_btn.clicked.connect(self.cancel_global_clicked.emit)
         self.cancel_global_btn.setVisible(False)
-        self.cancel_global_btn.setStyleSheet(f"background-color: {Theme.SURFACE2}; color: {Theme.TEXT};")
-        bottom_layout.addWidget(self.cancel_global_btn)
+        self.cancel_global_btn.setStyleSheet(f"""
+            QPushButton {{
+                background-color: transparent;
+                color: {Theme.TEXT};
+                border: 1px solid {Theme.SURFACE2};
+                border-radius: {Theme.CORNER_RADIUS};
+                padding: 10px 20px;
+                font-weight: 600;
+            }}
+            QPushButton:hover {{
+                background-color: {Theme.SURFACE1};
+                border-color: {Theme.OVERLAY0};
+            }}
+        """)
+        btn_row.addWidget(self.cancel_global_btn)
 
         self.save_btn = QPushButton("Save Changes")
         self.save_btn.setProperty("class", "primary")
         self.save_btn.setCursor(Qt.PointingHandCursor)
         self.save_btn.clicked.connect(self.save_clicked.emit)
-        bottom_layout.addWidget(self.save_btn)
+        btn_row.addWidget(self.save_btn)
         
+        bottom_layout.addLayout(btn_row)
         main_layout.addLayout(bottom_layout)
 
     def toggle_extended(self, checked):
@@ -258,7 +276,20 @@ class Sidebar(QWidget):
                 border: 1px solid {Theme.ACCENT};
             }}
         """)
-        self.cancel_global_btn.setStyleSheet(f"background-color: {Theme.SURFACE2}; color: {Theme.TEXT};")
+        self.cancel_global_btn.setStyleSheet(f"""
+            QPushButton {{
+                background-color: transparent;
+                color: {Theme.TEXT};
+                border: 1px solid {Theme.SURFACE2};
+                border-radius: {Theme.CORNER_RADIUS};
+                padding: 10px 20px;
+                font-weight: 600;
+            }}
+            QPushButton:hover {{
+                background-color: {Theme.SURFACE1};
+                border-color: {Theme.OVERLAY0};
+            }}
+        """)
 
     def set_cover(self, pixmap):
         if pixmap and not pixmap.isNull():

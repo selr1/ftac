@@ -110,6 +110,10 @@ class FileList(QTreeWidget):
         item.setText(7, meta.disc_number or "")
         item.setText(8, meta.track_number or "")
         item.setData(0, Qt.UserRole, path)
+        
+        item.setTextAlignment(5, Qt.AlignCenter)  # Year
+        item.setTextAlignment(7, Qt.AlignCenter)  # Disc
+        item.setTextAlignment(8, Qt.AlignCenter)  # Track
 
     def refresh_view(self):
         self.clear()

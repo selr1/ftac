@@ -49,6 +49,9 @@ class Theme:
             cls.SURFACE0 = "#ffffff"
             cls.SURFACE1 = "#f0f0f0"
             cls.SURFACE2 = "#e0e0e0"
+            cls.ACCENT = "#e01e4f"
+            cls.ACCENT_HOVER = "#c91847"
+            cls.ACCENT_DIM = "#a8153b"
             cls.WINDOW_BG = cls.BASE
             cls.SIDEBAR_BG = cls.MANTLE
             cls.BUTTON_TEXT = "#ffffff"
@@ -165,7 +168,7 @@ class Theme:
                 outline: none;
             }}
             QTreeWidget::item {{
-                padding: 8px;
+                padding: 10px 8px;
                 border-radius: 4px;
                 color: {Theme.SUBTEXT1};
             }}
@@ -287,20 +290,20 @@ class Theme:
                 color: {Theme.TEXT};
                 border: 1px solid {Theme.SURFACE1};
                 border-radius: {Theme.CORNER_RADIUS};
-                padding: 5px;
+                padding: 8px;
             }}
             QMenu::item {{
-                padding: 8px 20px;
+                padding: 12px 24px;
                 border-radius: 4px;
             }}
             QMenu::item:selected {{
                 background-color: {Theme.ACCENT};
-                color: {Theme.TEXT};
+                color: {Theme.CRUST};
             }}
             QMenu::separator {{
                 height: 1px;
                 background: {Theme.SURFACE1};
-                margin: 5px 0px;
+                margin: 8px 10px;
             }}
             
             /* Horizontal Scrollbar */
