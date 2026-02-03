@@ -3,20 +3,40 @@ from PySide6.QtWidgets import (
     QPushButton, QLabel, QTreeWidget, QTreeWidgetItem, QHeaderView, 
     QDialogButtonBox, QWidget
 )
-from PySide6.QtCore import Qt
+from PySide6.QtCore import Qt, QThread, Signal, QObject
+from PySide6.QtGui import QPixmap
 from tagqt.ui.theme import Theme
 from tagqt.ui import dialogs
+import requests
+
+
+class ImageLoaderWorker(QObject):
+    finished = Signal(bytes)
+    
+    def __init__(self, url):
+        super().__init__()
+        self.url = url
+    
+    def run(self):
+        try:
+            response = requests.get(self.url, timeout=10)
+            response.raise_for_status()
+            self.finished.emit(response.content)
+        except:
+            self.finished.emit(b"")
+
 
 class UnifiedSearchDialog(QDialog):
     def __init__(self, parent=None, mode="lyrics", initial_artist="", initial_title="", initial_album="", fetcher_callback=None):
         super().__init__(parent)
         self.setWindowTitle(f"Get {mode.capitalize()}{'s' if mode == 'cover' else ''}")
-        self.resize(800, 600)
+        self.resize(900 if mode == "cover" else 800, 600)
         self.setStyleSheet(Theme.get_stylesheet())
         
         self.mode = mode
         self.fetcher_callback = fetcher_callback
         self.selected_result = None
+        self._loader_thread = None
         
         layout = QVBoxLayout(self)
         layout.setContentsMargins(20, 20, 20, 20)
@@ -45,18 +65,52 @@ class UnifiedSearchDialog(QDialog):
         self.search_btn.clicked.connect(self.perform_search)
         layout.addWidget(self.search_btn)
         
-        # --- Results Tree ---
-        self.tree = QTreeWidget()
-        if mode == "lyrics":
-            self.tree.setHeaderLabels(["Title", "Artist", "Album", "Duration", "Type"])
-        else:
-            self.tree.setHeaderLabels(["Album", "Artist", "Source", "Size"])
+        # --- Results Area ---
+        if mode == "cover":
+            results_layout = QHBoxLayout()
+            results_layout.setSpacing(20)
             
-        self.tree.header().setSectionResizeMode(QHeaderView.ResizeToContents)
-        self.tree.header().setSectionResizeMode(0, QHeaderView.Stretch)
-        self.tree.setRootIsDecorated(False)
-        self.tree.itemDoubleClicked.connect(self.accept_selection)
-        layout.addWidget(self.tree)
+            # Tree on left
+            self.tree = QTreeWidget()
+            self.tree.setHeaderLabels(["Album", "Artist", "Source", "Size"])
+            self.tree.header().setSectionResizeMode(QHeaderView.ResizeToContents)
+            self.tree.header().setSectionResizeMode(0, QHeaderView.Stretch)
+            self.tree.setRootIsDecorated(False)
+            self.tree.itemDoubleClicked.connect(self.accept_selection)
+            results_layout.addWidget(self.tree, stretch=2)
+            
+            # Preview on right
+            preview_container = QVBoxLayout()
+            preview_container.setSpacing(10)
+            
+            preview_label = QLabel("Preview")
+            preview_label.setStyleSheet(f"color: {Theme.SUBTEXT0}; font-weight: bold;")
+            preview_container.addWidget(preview_label)
+            
+            self.preview_image = QLabel()
+            self.preview_image.setFixedSize(200, 200)
+            self.preview_image.setAlignment(Qt.AlignCenter)
+            self.preview_image.setStyleSheet(f"""
+                QLabel {{
+                    background-color: {Theme.SURFACE0};
+                    border: 1px solid {Theme.SURFACE1};
+                    border-radius: {Theme.CORNER_RADIUS};
+                }}
+            """)
+            self.preview_image.setText("Select a cover")
+            preview_container.addWidget(self.preview_image)
+            preview_container.addStretch()
+            
+            results_layout.addLayout(preview_container)
+            layout.addLayout(results_layout)
+        else:
+            self.tree = QTreeWidget()
+            self.tree.setHeaderLabels(["Title", "Artist", "Album", "Duration", "Type"])
+            self.tree.header().setSectionResizeMode(QHeaderView.ResizeToContents)
+            self.tree.header().setSectionResizeMode(0, QHeaderView.Stretch)
+            self.tree.setRootIsDecorated(False)
+            self.tree.itemDoubleClicked.connect(self.accept_selection)
+            layout.addWidget(self.tree)
         
         # --- Footer Buttons ---
         buttons = QDialogButtonBox(QDialogButtonBox.Cancel)
@@ -66,23 +120,12 @@ class UnifiedSearchDialog(QDialog):
         self.select_btn.setProperty("class", "primary")
         self.select_btn.setCursor(Qt.PointingHandCursor)
         self.select_btn.clicked.connect(self.accept_selection)
-        self.select_btn.setEnabled(False) # Disabled until selection
+        self.select_btn.setEnabled(False)
         
         buttons.addButton(self.select_btn, QDialogButtonBox.AcceptRole)
-        
         layout.addWidget(buttons)
         
         self.tree.itemSelectionChanged.connect(self.on_selection_changed)
-        
-        # Auto-search if we have enough info? Maybe not, let user confirm.
-        # But user expects "Search" to just work if they clicked "Fetch".
-        # Let's auto-search if fields are populated.
-        if initial_artist and (initial_title or mode == "cover"):
-            # Use a timer or just call it? Call it directly might block UI show.
-            # Let's just let user click search, or maybe trigger it.
-            # User said: "currently when i search for lyrics and search temr window appear and when i confirm it dissappear and another windows appear... i dont want it like that"
-            # So they probably want to see the dialog, maybe adjust, then search.
-            pass
 
     def perform_search(self):
         artist = self.artist_edit.text()
@@ -99,11 +142,13 @@ class UnifiedSearchDialog(QDialog):
              
         self.tree.clear()
         self.select_btn.setEnabled(False)
+        if self.mode == "cover":
+            self.preview_image.clear()
+            self.preview_image.setText("Select a cover")
         
-        # Show loading?
         self.search_btn.setText("Searching...")
         self.search_btn.setEnabled(False)
-        self.repaint() # Force update
+        self.repaint()
         
         try:
             results = []
@@ -137,7 +182,7 @@ class UnifiedSearchDialog(QDialog):
                     duration_str,
                     type_str
                 ])
-            else: # cover
+            else:
                 item = QTreeWidgetItem([
                     res.get("album", ""),
                     res.get("artist", ""),
@@ -154,10 +199,40 @@ class UnifiedSearchDialog(QDialog):
         return f"{m:02d}:{s:02d}"
 
     def on_selection_changed(self):
-        self.select_btn.setEnabled(len(self.tree.selectedItems()) > 0)
+        has_selection = len(self.tree.selectedItems()) > 0
+        self.select_btn.setEnabled(has_selection)
+        
+        if self.mode == "cover" and has_selection:
+            item = self.tree.currentItem()
+            if item:
+                res = item.data(0, Qt.UserRole)
+                url = res.get("url", "")
+                if url:
+                    self.load_preview(url)
+
+    def load_preview(self, url):
+        self.preview_image.setText("Loading...")
+        
+        self._loader_thread = QThread()
+        self._loader_worker = ImageLoaderWorker(url)
+        self._loader_worker.moveToThread(self._loader_thread)
+        self._loader_thread.started.connect(self._loader_worker.run)
+        self._loader_worker.finished.connect(self.on_preview_loaded)
+        self._loader_worker.finished.connect(self._loader_thread.quit)
+        self._loader_thread.start()
+
+    def on_preview_loaded(self, data):
+        if data:
+            pixmap = QPixmap()
+            pixmap.loadFromData(data)
+            if not pixmap.isNull():
+                self.preview_image.setPixmap(pixmap.scaled(200, 200, Qt.KeepAspectRatio, Qt.SmoothTransformation))
+                return
+        self.preview_image.setText("Failed to load")
 
     def accept_selection(self):
         item = self.tree.currentItem()
         if item:
             self.selected_result = item.data(0, Qt.UserRole)
             self.accept()
+

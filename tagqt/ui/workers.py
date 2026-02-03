@@ -435,9 +435,6 @@ class CoverFetchWorker(QObject):
                 
                 try:
                     md = MetadataHandler(f)
-                    if md.get_cover():
-                        self.result.emit(f, "Skipped", "Cover already exists")
-                        continue
                         
                     candidates = self.cover_manager.search_cover_candidates(md.artist, md.album)
                     if candidates:
